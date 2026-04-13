@@ -5,8 +5,6 @@
 *.tfvars
 *.tfvars.json
 
-# GitHub Actions
-.github/
 
 # Local secrets
 *.pem

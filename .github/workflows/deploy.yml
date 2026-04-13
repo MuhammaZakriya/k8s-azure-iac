@@ -1,0 +1,39 @@
+name: Validate Terraform Configuration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  terraform-validate:
+    name: 'Terraform Validation'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.0
+    
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./terraform
+    
+    - name: Terraform Validate
+      run: terraform validate
+      working-directory: ./terraform
+    
+    - name: Terraform Format Check
+      run: terraform fmt -check
+      working-directory: ./terraform
+    
+    - name: Terraform Plan (Dry Run)
+      run: terraform plan
+      working-directory: ./terraform
+      continue-on-error: true  # Will show plan even without credentials
