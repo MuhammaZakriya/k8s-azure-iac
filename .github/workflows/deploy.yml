@@ -1,35 +1,67 @@
-name: Validate Terraform Configuration
+name: Terraform CI/CD
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # Allows manual trigger
+  push:
+    branches: [ main ]
 
 jobs:
-  terraform-validate:
-    name: 'Terraform Validation'
+
+  terraform:
+    name: Terraform Pipeline
     runs-on: ubuntu-latest
-    
+
+    defaults:
+      run:
+        working-directory: terraform
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
         terraform_version: 1.6.0
-    
-    - name: Terraform Init
-      run: terraform init
+
+    - name: Terraform Init with Remote Backend
+      run: |
+        terraform init \
+          -backend-config="resource_group_name=${{ secrets.TF_STATE_RESOURCE_GROUP }}" \
+          -backend-config="storage_account_name=${{ secrets.TF_STATE_STORAGE_ACCOUNT }}" \
+          -backend-config="container_name=${{ secrets.TF_STATE_CONTAINER }}" \
+          -backend-config="access_key=${{ secrets.TF_STATE_ACCESS_KEY }}"
+
+    - name: Terraform Format Check
+      run: terraform fmt -check
 
     - name: Terraform Validate
       run: terraform validate
-    
-    - name: Terraform Format Check
-      run: terraform fmt -check
-    
-    - name: Terraform Plan (Dry Run)
-      run: terraform plan
-      continue-on-error: true  # Will show plan even without credentials
+
+    - name: Terraform Plan
+      run: terraform plan -input=false -out=tfplan
+
+    - name: Terraform Apply
+      if: github.event_name == 'push'
+      run: terraform apply -auto-approve tfplan
+
+    - name: Get VM IPs
+      if: github.event_name == 'push'
+      run: |
+        echo "MASTER_IP=$(terraform output -raw master_public_ip)" >> $GITHUB_ENV
+        echo "WORKER1_IP=$(terraform output -raw worker1_public_ip)" >> $GITHUB_ENV
+        echo "WORKER2_IP=$(terraform output -raw worker2_public_ip)" >> $GITHUB_ENV
+
+    - name: Display VM IPs
+      if: github.event_name == 'push'
+      run: |
+        echo "✅ Deployment Complete"
+        echo "Master: $MASTER_IP"
+        echo "Worker1: $WORKER1_IP"
+        echo "Worker2: $WORKER2_IP"

@@ -1,8 +1,10 @@
-# Terraform configuration for Azure Kubernetes Infrastructure
-# Milestone 2: Basic structure with no resources yet
+# Root Terraform Configuration
+# This file orchestrates all modules
 
 terraform {
   required_version = ">= 1.0"
+  
+  backend "azurerm" {}
   
   required_providers {
     azurerm = {
@@ -12,19 +14,42 @@ terraform {
   }
 }
 
-# Provider configuration (will be configured via GitHub Actions)
 provider "azurerm" {
   features {}
 }
 
-# Backend configuration for storing state (to be added later)
-# backend "azurerm" {
-#   resource_group_name  = "terraform-state-rg"
-#   storage_account_name = "terraformstate"
-#   container_name       = "tfstate"
-#   key                  = "k8s-cluster.tfstate"
-# }
+# Module 1: Resource Group
+module "resource_group" {
+  source = "./modules/resource-group"
+  
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  tags                = var.tags
+}
 
-# Resource Group - Will be added in Milestone 3
-# Virtual Network - Will be added in Milestone 3
-# VMs - Will be added in Milestone 3
+# Module 2: Networking
+module "networking" {
+  source = "./modules/networking"
+  
+  resource_group_name = module.resource_group.name
+  location            = module.resource_group.location
+  vnet_name           = "${var.resource_group_name}-vnet"
+  subnet_name         = "${var.resource_group_name}-subnet"
+  nsg_name            = "${var.resource_group_name}-nsg"
+  
+  security_rules = var.security_rules
+  tags           = var.tags
+}
+
+# Module 3: Virtual Machines
+module "virtual_machines" {
+  source = "./modules/virtual-machines"
+  
+  resource_group_name = module.resource_group.name
+  location            = module.resource_group.location
+  subnet_id           = module.networking.subnet_id
+  vms                 = var.vms
+  admin_username      = var.admin_username
+  ssh_public_key_path = var.ssh_public_key_path
+  tags                = var.tags
+}

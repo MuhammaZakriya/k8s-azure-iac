@@ -1,5 +1,4 @@
-# Variables for Azure Kubernetes Infrastructure
-# These will be used in Milestone 3
+# Root Variables
 
 variable "resource_group_name" {
   description = "Name of the resource group"
@@ -10,13 +9,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure region for resources"
   type        = string
-  default     = "East US"
-}
-
-variable "vm_size" {
-  description = "Size of the VMs"
-  type        = string
-  default     = "Standard_B1s"
+  default     = "centralindia"
 }
 
 variable "admin_username" {
@@ -25,13 +18,12 @@ variable "admin_username" {
   default     = "azureuser"
 }
 
-variable "environment" {
-  description = "Environment name"
+variable "ssh_public_key_path" {
+  description = "Path to SSH public key"
   type        = string
-  default     = "dev"
+  default     = "~/.ssh/id_rsa.pub"
 }
 
-# Tags for all resources
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
@@ -40,4 +32,83 @@ variable "tags" {
     Provisioned = "Terraform"
     Project     = "K8s-Cluster"
   }
+}
+
+# VM Definitions
+variable "vms" {
+  description = "Virtual machine configurations"
+  type = map(object({
+    name            = string
+    size            = string
+    image_publisher = string
+    image_offer     = string
+    image_sku       = string
+    image_version   = string
+  }))
+  default = {
+    master = {
+      name            = "master-node"
+      size            = "Standard_B1s"
+      image_publisher = "Canonical"
+      image_offer     = "0001-com-ubuntu-server-jammy"
+      image_sku       = "22_04-lts"
+      image_version   = "latest"
+    }
+    worker1 = {
+      name            = "worker-node-1"
+      size            = "Standard_B1s"
+      image_publisher = "Canonical"
+      image_offer     = "0001-com-ubuntu-server-jammy"
+      image_sku       = "22_04-lts"
+      image_version   = "latest"
+    }
+    worker2 = {
+      name            = "worker-node-2"
+      size            = "Standard_B1s"
+      image_publisher = "Canonical"
+      image_offer     = "0001-com-ubuntu-server-jammy"
+      image_sku       = "22_04-lts"
+      image_version   = "latest"
+    }
+  }
+}
+
+# Security Rules
+variable "security_rules" {
+  description = "Security rules for Network Security Group"
+  type = list(object({
+    name                       = string
+    priority                   = number
+    direction                  = string
+    access                     = string
+    protocol                   = string
+    source_port_range          = string
+    destination_port_range     = string
+    source_address_prefixes    = list(string)
+    destination_address_prefix = string
+  }))
+  default = [
+    {
+      name                       = "SSH"
+      priority                   = 1001
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "22"
+      source_address_prefixes    = ["0.0.0.0/0"]
+      destination_address_prefix = "*"
+    },
+    {
+      name                       = "K8sAPI"
+      priority                   = 1002
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "6443"
+      source_address_prefixes    = ["0.0.0.0/0"]
+      destination_address_prefix = "*"
+    }
+  ]
 }

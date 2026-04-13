@@ -1,21 +1,36 @@
-# Outputs for Azure Kubernetes Infrastructure
-# These will be populated in Milestone 3
+# Root Outputs
 
 output "resource_group_name" {
   description = "Name of the resource group"
-  value       = var.resource_group_name
+  value       = module.resource_group.name
 }
 
 output "location" {
   description = "Azure region"
-  value       = var.location
+  value       = module.resource_group.location
 }
 
-# Future outputs for Milestone 3:
-# output "master_vm_public_ip" {
-#   value = azurerm_public_ip.master_ip.ip_address
-# }
-#
-# output "worker_vm_public_ips" {
-#   value = azurerm_public_ip.worker_ips[*].ip_address
-# }
+output "master_public_ip" {
+  description = "Public IP of master node"
+  value       = module.virtual_machines.public_ips["master"]
+}
+
+output "worker1_public_ip" {
+  description = "Public IP of worker node 1"
+  value       = module.virtual_machines.public_ips["worker1"]
+}
+
+output "worker2_public_ip" {
+  description = "Public IP of worker node 2"
+  value       = module.virtual_machines.public_ips["worker2"]
+}
+
+output "all_public_ips" {
+  description = "All VM public IPs"
+  value       = module.virtual_machines.public_ips
+}
+
+output "ssh_master_command" {
+  description = "SSH command for master node"
+  value       = "ssh ${var.admin_username}@${module.virtual_machines.public_ips["master"]}"
+}
