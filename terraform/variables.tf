@@ -15,7 +15,7 @@ variable "ssh_public_key" {
 variable "location" {
   description = "Azure region for resources"
   type        = string
-  default     = "centralindia"
+  default     = "southindia"
 }
 
 variable "admin_username" {
