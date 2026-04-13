@@ -15,7 +15,7 @@ variable "ssh_public_key" {
 variable "location" {
   description = "Azure region for resources"
   type        = string
-  default     = "eastus"
+  default     = "westeurope"
 }
 
 variable "admin_username" {
@@ -54,7 +54,7 @@ variable "vms" {
   default = {
     master = {
       name            = "master-node"
-      size            = "Standard_B2ms"
+      size            = "Standard_B2s"
       image_publisher = "Canonical"
       image_offer     = "0001-com-ubuntu-server-jammy"
       image_sku       = "22_04-lts"
@@ -62,7 +62,7 @@ variable "vms" {
     }
     worker1 = {
       name            = "worker-node-1"
-      size            = "Standard_B2ms"
+      size            = "Standard_B2s"
       image_publisher = "Canonical"
       image_offer     = "0001-com-ubuntu-server-jammy"
       image_sku       = "22_04-lts"
@@ -70,7 +70,7 @@ variable "vms" {
     }
     worker2 = {
       name            = "worker-node-2"
-      size            = "Standard_B2ms"
+      size            = "Standard_B2s"
       image_publisher = "Canonical"
       image_offer     = "0001-com-ubuntu-server-jammy"
       image_sku       = "22_04-lts"
