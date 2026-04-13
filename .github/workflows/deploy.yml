@@ -47,10 +47,14 @@ jobs:
 
     - name: Terraform Plan
       run: terraform plan -input=false -out=tfplan
+      env:
+        TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
 
     - name: Terraform Apply
       if: github.event_name == 'push'
       run: terraform apply -auto-approve tfplan
+      env:
+        TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
 
     - name: Get VM IPs
       if: github.event_name == 'push'

@@ -6,6 +6,12 @@ variable "resource_group_name" {
   default     = "k8s-cluster-rg"
 }
 
+variable "ssh_public_key" {
+  description = "SSH public key content"
+  type        = string
+  sensitive   = true
+}
+
 variable "location" {
   description = "Azure region for resources"
   type        = string

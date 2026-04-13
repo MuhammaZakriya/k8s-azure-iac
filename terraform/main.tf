@@ -50,6 +50,6 @@ module "virtual_machines" {
   subnet_id           = module.networking.subnet_id
   vms                 = var.vms
   admin_username      = var.admin_username
-  ssh_public_key_path = var.ssh_public_key_path
+  ssh_public_key_path = var.ssh_public_key
   tags                = var.tags
 }
