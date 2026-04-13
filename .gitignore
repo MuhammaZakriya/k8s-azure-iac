@@ -9,13 +9,13 @@
 # Local secrets
 *.pem
 *.key
-.env
 
 # OS files
 .DS_Store
 Thumbs.db
 
 # IDE files
-.vscode/
 .idea/
 *.swp
+config.bat
+node_modules
